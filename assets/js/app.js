@@ -1,13 +1,12 @@
-const isbn = form.querySelector("[name='isbn']");
-    if (isbn) {
-      const nilai = isbn.value.trim();
-      if (nilai !== "" && !/^[0-9-]+$/.test(nilai)) {
-        tampilkanError(isbn, "ISBN hanya boleh berisi angka dan tanda hubung (-).");
-        valid = false;
-      } else {
-        hapusError(isbn);
-      }
-    }
+function initNavToggle() {
+  const btn = document.getElementById("nav-toggle-btn");
+  const nav = document.querySelector("header nav");
+  if (!btn || !nav) return;
+  btn.addEventListener("click", function () {
+    nav.classList.toggle("nav-open");
+  });
+}
+
 function initTableFilter() {
   const input = document.getElementById("search-input");
   const table = document.querySelector(".table-responsive table");
@@ -15,11 +14,14 @@ function initTableFilter() {
 
   input.addEventListener("keyup", function () {
     const keyword = input.value.toLowerCase();
-    const rows = table.querySelectorAll("tbody tr");
-
-    rows.forEach(function (row) {
+    table.querySelectorAll("tbody tr").forEach(function (row) {
       const teks = row.querySelector("td")?.textContent.toLowerCase() ?? "";
       row.style.display = teks.includes(keyword) ? "" : "none";
     });
   });
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  initNavToggle();
+  initTableFilter();
+});
