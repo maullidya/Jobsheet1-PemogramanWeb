@@ -1,5 +1,6 @@
 <?php
 session_start();
+require __DIR__ . '/../includes/koneksi.php';   
 
 $nama       = trim($_POST['nama'] ?? '');
 $no_anggota = trim($_POST['no_anggota'] ?? '');
@@ -33,16 +34,33 @@ if (!empty($errors)) {
     exit;
 }
 
-if (!isset($_SESSION['anggota'])) {
-    $_SESSION['anggota'] = [];
+try {
+    $stmt = $pdo->prepare(
+        "INSERT INTO anggota (nama, no_anggota, alamat, no_hp)
+         VALUES (:nama, :no_anggota, :alamat, :no_hp)
+         RETURNING id"
+    );
+    $stmt->execute([
+        'nama'       => $nama,
+        'no_anggota' => $no_anggota,
+        'alamat'     => $alamat,
+        'no_hp'      => $no_hp,
+    ]);
+} catch (PDOException $e) {
+    if ($e->getCode() === '23505') {
+        $_SESSION['flash'] = ['type' => 'error', 'pesan' => 'No. Anggota sudah dipakai, gunakan nomor lain.'];
+    } else {
+        $_SESSION['flash'] = ['type' => 'error', 'pesan' => 'Gagal menyimpan anggota.'];
+    }
+    header('Location: tambah.php');
+    exit;
 }
 
-$_SESSION['anggota'][] = [
-    'no_anggota' => $no_anggota,
-    'nama'       => $nama,
-    'alamat'     => $alamat,
-    'no_hp'      => $no_hp,
-];
+$_SESSION['flash'] = ['type' => 'success', 'pesan' => 'Anggota berhasil ditambahkan.'];
+header('Location: list.php');
+exit;
+
+
 
 $_SESSION['flash'] = ['type' => 'success', 'pesan' => 'Anggota berhasil ditambahkan.'];
 header('Location: list.php');

@@ -3,7 +3,15 @@ $page_title = "Daftar Buku";
 include __DIR__ . '/../includes/header.php';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
-$daftarBuku = $_SESSION['buku'] ?? [];
+require __DIR__ . '/../includes/koneksi.php';
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+    $stmt = $pdo->prepare("SELECT * FROM buku WHERE judul ILIKE :keyword ORDER BY id DESC");
+    $stmt->execute(['keyword' => '%' . $q . '%']);
+    $daftarBuku = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $daftarBuku = $pdo->query("SELECT * FROM buku ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
         <section>
             <h2>Daftar Buku</h2>
@@ -12,10 +20,12 @@ $daftarBuku = $_SESSION['buku'] ?? [];
                 <p class="flash flash-<?php echo $flash['type']; ?>"><?php echo htmlspecialchars($flash['pesan']); ?></p>
             <?php endif; ?>
 
-            <div class="search-box">
+           <form method="get" class="search-box">
                 <label for="search-input">Cari Judul Buku</label>
-                <input type="text" id="search-input" placeholder="Ketik judul buku...">
-            </div>
+                <input type="text" id="search-input" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Ketik judul buku...">
+                <button type="submit">Cari</button>
+            </form>
+
 
             <div class="table-responsive">
                 <table>
@@ -26,6 +36,7 @@ $daftarBuku = $_SESSION['buku'] ?? [];
                             <th>Tahun</th>
                             <th>Stok</th>
                             <th>Aksi</th>
+                            <th>Ditambahkan</th>
                         </tr>
                     </thead>
                     <tbody>
